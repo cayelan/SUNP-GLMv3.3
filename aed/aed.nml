@@ -392,7 +392,7 @@
    TN_vars =  'NIT_nit','NIT_amm',
               'OGM_don',
               'OGM_donr',
-              'OGM_pon'
+              'OGM_pon',
               'PHY_in'
    TN_varscale = 1.0, 1.0, 1.0, 1.0, 1.0
    TP_vars =  'PHS_frp',
@@ -404,11 +404,10 @@
    TOC_vars = 'OGM_doc',
               'OGM_docr',
               'OGM_poc',
-              'OGM_cpom'
+              'OGM_cpom',
               'PHY_tphy'
   TOC_varscale = 1.0, 1.0, 1.0, 1.0
 /
-
 
 !###############################################################################
 ! aed_sed_candi
@@ -462,9 +461,6 @@
    n_ddpths           = 1
    output_diag_depths = 1.0
 /
-
-
-
 !###############################################################################
 ! ZOO: aed_zooplankton - AED zooplankton model
 !
@@ -483,7 +479,6 @@
    pc_target_variable = 'OGM_poc'  ! particulate carbon target variable
    dbase='aed/aed_zoop_pars.nml'
 /
-
 !###############################################################################
 ! aed_bivalve - AED bivalve model
 !-------------------------------------------------------------------------------

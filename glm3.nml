@@ -131,7 +131,7 @@
    benthic_mode = 2
    sed_heat_model = 1
    n_zones = 2
-   zone_heights = 0.935555555555556, 0.329777777777778
+   zone_heights = 20, 35!0.935555555555556, 0.329777777777778
    sed_temp_mean = 3, 3.56666666666667
    sed_temp_depth = 0.2, 0.2
    sed_temp_amplitude = 2.08888888888889, 2.57777777777778
