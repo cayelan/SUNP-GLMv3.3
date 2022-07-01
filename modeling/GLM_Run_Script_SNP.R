@@ -11,8 +11,8 @@
 #*****************************************************************
 
 # changing to glm3r
-remotes::install_github("CareyLabVT/GLM3r", force = T)
-remotes::install_github("CareyLabVT/glmtools", force = T)
+#remotes::install_github("CareyLabVT/GLM3r", force = T)
+#remotes::install_github("CareyLabVT/glmtools", force = T)
 
 Sys.setenv(TZ = 'America/New_York')
 
@@ -20,13 +20,13 @@ Sys.setenv(TZ = 'America/New_York')
 #if (!require('pacman')) install.packages('pacman'); library('pacman')
 pacman::p_load(tidyverse, lubridate, ncdf4, GLMr, glmtools)
 
-setwd("~/Dropbox/SUNP-GLMv3.3-JHW/")
+setwd("~/Dropbox/ComputerFiles/SCC/SUNP-GLMv3.3")
 sim_folder <- getwd()
 
 #look at glm and aed nml files
 nml_file <- paste0(sim_folder,"/glm3.nml")
 aed_file <- paste0(sim_folder,"/aed/aed.nml")
-aed_phytos_file <- paste0(sim_folder,"/aed/aed2_phyto_pars_2May2022_RQT.nml")
+aed_phytos_file <- paste0(sim_folder,"/aed/aed2_phyto_pars_20April2022_constant.nml")
 nml <- read_nml(nml_file) 
 aed <- read_nml(aed_file) #you may get a warning about an incomplete final line but it doesn't matter
 aed_phytos <- read_nml(aed_phytos_file)
@@ -35,14 +35,13 @@ print(aed)
 print(aed_phytos)
 
 ##### run the model! #######
-sim_folder<-"~/Dropbox/SUNP-GLMv3.3-JHW"
-setwd(sim_folder)
+#sim_folder<-"~/Dropbox/SUNP-GLMv3.3-JHW"
+#setwd(sim_folder)
 
 # GLM3r::run_glm(sim_folder, nml_file = 'glm3.nml', verbose = T)
 
 
-
-system2("/Users/jacobwynne/Dropbox/SUNP-GLMv3.3-JHW/glm.app/Contents/MacOS/glm", stdout = TRUE, stderr = TRUE, env = "DYLD_LIBRARY_PATH=/Users/jacobwynne/Dropbox/SUNP-GLMv3.3-JHW/glm.app/Contents/MacOS")
+system2("/Users/cayelan/Dropbox/GLM_V3/bin/Monterey/glm+.app/Contents/MacOS/glm+", stdout = TRUE, stderr = TRUE, env = "DYLD_LIBRARY_PATH=/Users/cayelan/Dropbox/GLM_V3/bin/Monterey/glm.app/Contents/MacOS")
 #system2("/Users/jacobwynne/Dropbox/SUNP-GLMv3.3-JHW/glm+.app/Contents/MacOS/glm+", stdout = TRUE, stderr = TRUE, env = "DYLD_LIBRARY_PATH=/Users/jacobwynne/Dropbox/SUNP-GLMv3.3-JHW/glm+.app/Contents/MacOS")
 #system2(paste0(sim_folder, "/", "glm"), stdout = TRUE, stderr = TRUE, env = paste0("DYLD_LIBRARY_PATH=",sim_folder))
 #sometimes, you'll get an error that says "Error in file, 'Time(Date)' is not first column!
