@@ -19,6 +19,7 @@ Sys.setenv(TZ = 'America/New_York')
 # Load packages, set sim folder, load nml file ####
 #if (!require('pacman')) install.packages('pacman'); library('pacman')
 pacman::p_load(tidyverse, lubridate, ncdf4, GLMr, glmtools)
+library(magrittr)
 
 setwd("~/Dropbox/ComputerFiles/SCC/SUNP-GLMv3.3")
 sim_folder <- getwd()
@@ -48,6 +49,7 @@ system2("/Users/cayelan/Dropbox/GLM_V3/bin/Monterey/glm+.app/Contents/MacOS/glm+
 #in this case, open the input file in Excel, set the column in Custom ("YYYY-MM-DD") format, resave, and close the file
 nc_file <- file.path(sim_folder, 'output/output.nc') #defines the output.nc file 
 
+plot_temp(nc_file)
 
 #glm_version()
 
@@ -66,39 +68,39 @@ plot(volume$time, volume$Tot_V)
 plot(evap$time, evap$evap)
 plot(precip$time, precip$precip)
 
-outflow<-read.csv("inputs/FCR_spillway_outflow_SUMMED_WeirWetland_2013_2019_20200615.csv", header=T)
-inflow_weir<-read.csv("inputs/FCR_weir_inflow_2013_2019_20200828_allfractions_2poolsDOC.csv", header=T)
-inflow_wetland<-read.csv("inputs/FCR_wetland_inflow_2013_2019_20200828_allfractions_2DOCpools.csv", header=T)
-outflow$time<-as.POSIXct(strptime(outflow$time, "%Y-%m-%d", tz="EST"))
-inflow_weir$time<-as.POSIXct(strptime(inflow_weir$time, "%Y-%m-%d", tz="EST"))
-inflow_wetland$time<-as.POSIXct(strptime(inflow_wetland$time, "%Y-%m-%d", tz="EST"))
-
-plot(inflow_weir$time,inflow_weir$FLOW)
-lines(inflow_wetland$time, inflow_wetland$FLOW, col="red")
-sum(inflow_weir$FLOW)/(sum(inflow_weir$FLOW) + sum(inflow_wetland$FLOW))#proportion of wetland:weir inflows over time
-
-volume$time<-as.POSIXct(strptime(volume$time, "%Y-%m-%d", tz="EST"))
-wrt<-merge(volume, outflow, by='time')
-wrt$wrt <- ((wrt$Tot_V)/(wrt$FLOW))*(1/60)*(1/60)*(1/24) #residence time in days
-plot(wrt$time,wrt$wrt)
-
-hist(wrt$wrt)
-median(wrt$wrt)
-mean(wrt$wrt)
-range(wrt$wrt)
+# outflow<-read.csv("inputs/FCR_spillway_outflow_SUMMED_WeirWetland_2013_2019_20200615.csv", header=T)
+# inflow_weir<-read.csv("inputs/FCR_weir_inflow_2013_2019_20200828_allfractions_2poolsDOC.csv", header=T)
+# inflow_wetland<-read.csv("inputs/FCR_wetland_inflow_2013_2019_20200828_allfractions_2DOCpools.csv", header=T)
+# outflow$time<-as.POSIXct(strptime(outflow$time, "%Y-%m-%d", tz="EST"))
+# inflow_weir$time<-as.POSIXct(strptime(inflow_weir$time, "%Y-%m-%d", tz="EST"))
+# inflow_wetland$time<-as.POSIXct(strptime(inflow_wetland$time, "%Y-%m-%d", tz="EST"))
+# 
+# plot(inflow_weir$time,inflow_weir$FLOW)
+# lines(inflow_wetland$time, inflow_wetland$FLOW, col="red")
+# sum(inflow_weir$FLOW)/(sum(inflow_weir$FLOW) + sum(inflow_wetland$FLOW))#proportion of wetland:weir inflows over time
+# 
+# volume$time<-as.POSIXct(strptime(volume$time, "%Y-%m-%d", tz="EST"))
+# wrt<-merge(volume, outflow, by='time')
+# wrt$wrt <- ((wrt$Tot_V)/(wrt$FLOW))*(1/60)*(1/60)*(1/24) #residence time in days
+# plot(wrt$time,wrt$wrt)
+# 
+# hist(wrt$wrt)
+# median(wrt$wrt)
+# mean(wrt$wrt)
+# range(wrt$wrt)
 
 #get ice
 
 #write.csv(sim_vars(nc_file), "vars.csv")
-iceblue <- get_var(nc_file, "blue_ice_thickness")
-ice<-get_var(nc_file,"hwice")
-iceblue<-get_var(nc_file,"hice")
-icesnow <- get_var(nc_file, "hsnow")
+#iceblue <- get_var(nc_file, "blue_ice_thickness")
+#ice<-get_var(nc_file,"hwice")
+iceblue<-get_var(nc_file,"hice") %>%
+  mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST")))
+#icesnow <- get_var(nc_file, "hsnow")
 
 
-
-DateTime <- as.data.frame(as.POSIXct(c("2000-04-09 12:00:00", "2001-05-03 12:00:00", "2002-04-12 12:00:00",
-                                       "2003-04-27 12:00:00", "2004-04-18 12:00:00", "2005-04-19 12:00:00")))
+DateTime <- as.POSIXct(c("2000-04-09 12:00:00", "2001-05-03 12:00:00", "2002-04-12 12:00:00",
+                                       "2003-04-27 12:00:00", "2004-04-18 12:00:00", "2005-04-19 12:00:00"),tz="EST")
 str(DateTime)
 
 
@@ -106,8 +108,8 @@ obsiceon <- read.csv('data/observed_ice_dates/iceon_dates.csv')
 obsiceoff <- read.csv('data/observed_ice_dates/iceoff_dates.csv')
 
 
-plot(iceblue$DateTime, iceblue$blue_ice_thickness)
-abline(v = DateTime[,1], col = "red")
+plot(iceblue$DateTime, iceblue$hice)
+abline(v = DateTime, col = "red")
 
 plot(ice$DateTime,rowSums(cbind(ice$hwice,iceblue$hice)))
 plot(ice$DateTime,ice$hwice, col="black", type="l", ylim=c(0,0.2))
@@ -122,12 +124,13 @@ plot(avgsurftemp$DateTime, avgsurftemp$avg_surf_temp, ylim=c(-1,30))
 ############## temperature data #######
 obstemp<-read_csv("data/formatted-data/field_temp_noon_obs.csv") %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>% 
-  rename(obstemp = Temp)
+  rename(obstemp = temp)
 
 unique(obstemp$Depth)
 
 #get modeled temperature readings for focal depths
-depths<- unique(obstemp$Depth)
+#depths<- unique(obstemp$Depth)
+depths<-c(0.50, 1.5, 2.5,3,5.5,7.5,9.5,10.5,11.5,13.5)
 modtemp <- get_temp(nc_file, reference="surface", z_out=depths) %>%
   pivot_longer(cols=starts_with("temp_"), names_to="Depth", names_prefix="temp_", values_to = "temp") %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>% 
@@ -139,7 +142,7 @@ modtemp <- get_temp(nc_file, reference="surface", z_out=depths) %>%
 watertemp<-merge(modtemp, obstemp, by=c("DateTime","Depth"))
 watertemp$Depth <- as.numeric(watertemp$Depth)
 watertemp$DateTime <- as.Date(watertemp$DateTime)
-for(i in 1:length(unique(watertemp$Depth))){
+for(i in 1:length(sort(unique(watertemp$Depth)))){
   tempdf<-subset(watertemp, watertemp$Depth==depths[i])
   plot(as.Date(tempdf$DateTime), tempdf$obstemp, type='p', col='red',
        ylab='temperature', xlab='time',
@@ -148,7 +151,7 @@ for(i in 1:length(unique(watertemp$Depth))){
 }
 
 #thermocline depth comparison
-field_file<-file.path(sim_folder,'/field_data/CleanedObsTemp.csv')
+field_file<-file.path(sim_folder,'data/formatted-data/field_temp_noon_obs.csv')
 plot_var_compare(nc_file,field_file,var_name = "temp", precision="days",col_lim = c(0,30)) #compare obs vs modeled
 therm_depths <- compare_to_field(nc_file, field_file, metric="thermo.depth", precision="days",method='interp',as_value=TRUE, na.rm=T)
 compare_to_field(nc_file, field_file, metric="thermo.depth", precision="days", method='interp',as_value=F, na.rm=TRUE) #prints RMSE
@@ -157,7 +160,7 @@ plot(therm_depths$DateTime,therm_depths$mod, type="l", ylim=c(1,9),main = paste0
 points(therm_depths$DateTime, therm_depths$obs, type="l",col="red")
 
 #Run sim diagnostics and calculate RMSE using glmtools
-field_file<-file.path(sim_folder,'/field_data/CleanedObsTemp.csv')
+field_file<-file.path(sim_folder,'/data/formatted-data/field_temp_noon_obs.csv')
 compare_to_field(nc_file, field_file, nml_file = nml_file, metric = 'hypo.temperature', as_value = FALSE,
                  na.rm = TRUE, precision = 'days',method = 'interp')
 compare_to_field(nc_file, field_file, nml_file = nml_file, metric = 'epi.temperature', as_value = FALSE,
@@ -201,37 +204,35 @@ RMSE(m_temp,o_temp)
 
 #read in cleaned CTD temp file with long-term obs at focal depths
 var="OXY_oxy"
-obs_oxy<-read.csv('data/formatted-data/manual_buoy_oxy.csv') %>%
+obs_oxy<-read.csv('data/formatted-data/oxy_fieldfile.csv') %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST")))
- #field_file <- file.path(sim_folder,'/field_data/manual_buoy') 
+field_file <- file.path(sim_folder,'data/formatted-data/oxy_fieldfile.csv') 
 depths<- unique(obs_oxy$Depth)
-plot_var(nc_file,var_name = var, precision="days",col_lim = c(0,120)) #compare obs vs modeled
+plot_var_compare(nc_file,field_file,var_name = var, precision="days",col_lim = c(0,500)) #compare obs vs modeled
 
 #get modeled oxygen concentrations for focal depths
 mod_oxy <- get_var(nc_file, var, reference="surface", z_out=depths) %>%
   pivot_longer(cols=starts_with(var), names_to="Depth", names_prefix=var, values_to = var) %>%
   mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) 
 
-
-
-plot_var(nc_file,var_name = var, precision="days",col_lim = c(0,150)) #compare obs vs modeled
+plot_var(nc_file,var_name = var, precision="days",col_lim = c(0,500)) #compare obs vs modeled
 
 colnames(obs_oxy)
 colnames(mod_oxy)
-obs_oxy$Depth <- as.numeric(obs_oxy$Depth)
+#obs_oxy$Depth <- as.numeric(obs_oxy$Depth)
 mod_oxy$Depth <- gsub('_', '', mod_oxy$Depth)
 mod_oxy$Depth <- as.numeric(mod_oxy$Depth)
 
 #lets do depth by depth comparisons of modeled vs. observed oxygen
 oxy_compare <- merge(mod_oxy, obs_oxy, by=c("DateTime","Depth")) %>% 
-  rename(mod_oxy = OXY_sat, obs_oxy = DOSat)
+  rename(mod_oxy = OXY_oxy.x, obs_oxy = OXY_oxy.y)
 depths<- unique(oxy_compare$Depth)
 
 for(i in 1:length(unique(oxy_compare$Depth))){
   tempdf<-subset(oxy_compare, oxy_compare$Depth==depths[i])
   plot(as.Date(tempdf$DateTime),tempdf$obs_oxy, type='p', col='red',
-       ylab='Percent Oxygen', xlab='time',
-       main = paste0("Obs=Red,Mod=Black,Depth=",depths[i]),ylim=c(50,150))
+       ylab='Oxygen', xlab='time',
+       main = paste0("Obs=Red,Mod=Black,Depth=",depths[i]), ylim=c(0,500))
   points(as.Date(tempdf$DateTime), tempdf$mod_oxy, type="l",col='black')
 }
 
@@ -449,7 +450,10 @@ RMSE(mod,obs)
 ######## ammonium #######
 
 var="NIT_amm"
-field_file <- file.path(sim_folder,'/field_data/field_chem.csv') 
+#field_file <- file.path(sim_folder,'/field_data/field_chem.csv') 
+
+plot_var(nc_file,var_name = var, precision="days") #compare obs vs modeled
+
 
 obs<-read.csv('field_data/field_chem.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
@@ -505,7 +509,8 @@ RMSE(mod,obs)
 ###### nitrate #########################################
 
 var="NIT_nit"
-field_file <- file.path(sim_folder,'/field_data/field_chem.csv') 
+#field_file <- file.path(sim_folder,'/field_data/field_chem.csv') 
+plot_var(nc_file,var_name = var, precision="days") #compare obs vs modeled
 
 obs<-read.csv('field_data/field_chem.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
@@ -562,7 +567,9 @@ RMSE(mod,obs)
 #### phosphate ########################################
 
 var="PHS_frp"
-field_file <- file.path(sim_folder,'/field_data/field_chem.csv') 
+#field_file <- file.path(sim_folder,'/field_data/field_chem.csv') 
+
+plot_var(nc_file, var_name = var, precision="days")
 
 obs<-read.csv('field_data/field_chem.csv', header=TRUE) %>% #read in observed chemistry data
   dplyr::mutate(DateTime = as.POSIXct(strptime(DateTime, "%Y-%m-%d", tz="EST"))) %>%
@@ -619,7 +626,9 @@ RMSE(mod,obs)
 
 #### dissolved organic carbon: recalcitrant ###########
 
-var="OGM_docr"
+var="OGM_doc"
+plot_var(nc_file, var_name = var, precision="days")
+
 field_file <- file.path(sim_folder,'/field_data/field_chem.csv') 
 
 obs<-read.csv('field_data/field_chem.csv', header=TRUE) %>% #read in observed chemistry data
@@ -984,6 +993,8 @@ for(i in 1:length(depths)){
 #### chlorophyll a #######
 
 var="PHY_tchla"
+plot_var(nc_file, var_name = var, precision="days")
+
 field_file <- file.path(sim_folder,'data/formatted-data/field_obs_chla.csv') 
 
 obs<-read.csv('data/formatted-data/field_obs_chla.csv', header=TRUE) %>% #read in observed chemistry data
@@ -1069,9 +1080,10 @@ green <- get_var(file=nc_file,var_name = 'PHY_green',z_out=1.0,reference = 'surf
 lines(green$DateTime, green$PHY_green_1, col="green")
 diatoms <- get_var(file=nc_file,var_name = 'PHY_diatom',z_out=1.0,reference = 'surface') 
 lines(diatoms$DateTime, diatoms$PHY_diatom_1, col="brown")
-legend("topleft", legend=c("Cyano", "Greens", "Diatoms"), fill= c("cyan", "green","brown"), cex=0.8)
 chla <- get_var(file=nc_file,var_name = 'PHY_tchla',z_out=1.0,reference = 'surface') 
 lines(chla$DateTime, chla$PHY_tchla_1, col="red")
+legend("topleft", legend=c("Cyano", "Greens", "Diatoms", "total chla"), fill= c("cyan", "green","brown", "red"), cex=0.8)
+
 
 #quinn's phyto limitation plot script
 phytos <- c('cyano','green','diatom')
